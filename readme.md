@@ -4,7 +4,7 @@
 
 > **An interactive astrodynamics application for designing, analyzing, and visualizing interplanetary transfer trajectories using Lambert's problem.**
 
-![Interplanetary Trajectory Planner](assets/screenshots/trajectory-demo.gif)
+![Interplanetary Trajectory Planner](assets/screenshots/trajectory_demo.gif)
 
 ---
 
@@ -218,9 +218,9 @@ orbital-transfer-app/
 
 Potential extensions include:
 
-* [ ] Porkchop plots for launch-window analysis
+* [x] Porkchop plots for launch-window analysis
 * [ ] Multi-revolution Lambert solutions
-* [ ] Multiple planetary departure and arrival options
+* [x] Multiple planetary departure and arrival options
 * [ ] Hohmann transfer comparison
 * [ ] Planetary sphere-of-influence modeling
 * [ ] Launch-window optimization
