@@ -1,0 +1,6 @@
+__pycache__/
+.venv/
+venv/
+temp_frames/
+.DS_Store
+.idea/

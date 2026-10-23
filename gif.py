@@ -14,7 +14,7 @@ def create_rotating_gif():
 
     # 1. Generate the base mission data (Earth to Mars)
     # Note: Adjust the arguments here if your get_planetary_orbits requires planet names
-    earth_orbit, mars_orbit, launch_epoch, arrival_epoch = get_planetary_orbits("Earth", "Mars", "2026-08-09 12:00:00", 250)
+    earth_orbit, mars_orbit, launch_epoch, arrival_epoch = get_planetary_orbits("Earth", "Mars", "2026-10-30 12:00:00", 306)
     transfer_orbit, _, _, _ = calculate_transfer(earth_orbit, mars_orbit)
     fig = create_mission_plot(earth_orbit, mars_orbit, transfer_orbit, "Earth", "Mars")
 

@@ -93,8 +93,8 @@ def create_porkchop_plot(launch_dates, arrival_dates, dv_grid):
             showlabels=True,  # Label the contour lines with the dV amount
             labelfont=dict(size=10, color='white')
         ),
-        colorbar=dict(title="Total Δv (km/s)"),
-        hovertemplate="Launch: %{x|%Y-%m-%d}<br>Arrival: %{y|%Y-%m-%d}<br>Δv: %{z:.2f} km/s<extra></extra>"
+        colorbar=dict(title="v∞ dep + arr (km/s)"),
+        hovertemplate="Launch: %{x|%Y-%m-%d}<br>Arrival: %{y|%Y-%m-%d}<br>v∞ sum: %{z:.2f} km/s<extra></extra>"
     ))
 
     fig.update_layout(

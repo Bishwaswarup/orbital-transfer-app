@@ -3,7 +3,8 @@ import datetime
 
 # Import modular backend components
 from src.ephemeris import get_planetary_orbits
-from src.trajectory import calculate_transfer
+from src.ephemeris import PLANETS
+from src.trajectory import calculate_transfer, parking_orbit_dv
 from src.visualization import create_mission_plot
 from src.porkchop import generate_porkchop_data, create_porkchop_plot
 
@@ -42,9 +43,12 @@ if origin_planet == dest_planet:
 
 launch_date_input = st.sidebar.date_input(
     "Select Launch Date",
-    datetime.date(2026, 8, 9)
+    datetime.date(2026, 10, 30),
+    help="Default: near the minimum-energy Earth → Mars launch of the 2026 window.",
 )
-transit_days = st.sidebar.slider("Estimated Transit Time (Days)", 100, 400, 250)
+transit_days = st.sidebar.slider("Transit time (days)", 60, 600, 306)
+parking_alt = st.sidebar.number_input("Parking-orbit altitude (km)", 100, 2000, 200, 50,
+                                      help="Circular orbit the spacecraft departs from and is captured into.")
 
 # Format time string for Astropy
 launch_time_str = f"{launch_date_input} 12:00:00"
@@ -62,14 +66,17 @@ try:
             )
 
             # 2. Compute physics
-            transfer_orbit, dv_dep, dv_arr, total_dv = calculate_transfer(
+            transfer_orbit, vinf_dep, vinf_arr, vinf_sum = calculate_transfer(
                 origin_orbit, dest_orbit
             )
+            dv_dep = parking_orbit_dv(vinf_dep, PLANETS[origin_planet], parking_alt)
+            dv_arr = parking_orbit_dv(vinf_arr, PLANETS[dest_planet], parking_alt)
 
             # Feasibility check
-            if total_dv > 15.0:
+            if vinf_sum > 15.0:
                 st.sidebar.warning(
-                    f"⚠️ **High Δv Detected ({total_dv:.2f} km/s):** This trajectory requires immense energy and may not be feasible for standard chemical propulsion. Try adjusting the transit time.")
+                    f"⚠️ **High v∞ ({vinf_sum:.2f} km/s):** these dates are far from a launch window. "
+                    "Check the porkchop plot for cheaper dates.")
 
             # 3. Render visuals with dynamic names
             fig = create_mission_plot(origin_orbit, dest_orbit, transfer_orbit, origin_planet, dest_planet)
@@ -79,7 +86,7 @@ try:
 
     with tab_porkchop:
         st.markdown(
-            "Sweeps a ±40 day window around your selected dates to find optimal, low-energy launch windows. **Darker regions indicate less fuel required.**")
+            "Sweeps a ±40 day window around your selected dates. Colour is the sum of departure and arrival v∞ from Lambert's problem; **darker regions are cheaper**.")
         with st.spinner("Computing 625 Lambert transfers for grid map... (Takes ~2 seconds)"):
             l_dates, a_dates, dv_grid = get_porkchop_cached(origin_planet, dest_planet, launch_time_str, transit_days)
             fig_porkchop = create_porkchop_plot(l_dates, a_dates, dv_grid)
@@ -92,10 +99,13 @@ try:
     st.sidebar.write(f"**Arrival:** {arrival_epoch.iso[:10]} (UTC)")
 
     st.sidebar.markdown("---")
-    st.sidebar.subheader("Delta-v Estimates (Patched-Conic)")
-    st.sidebar.write(f"**Departure dV:** {dv_dep:.2f} km/s")
-    st.sidebar.write(f"**Arrival dV:** {dv_arr:.2f} km/s")
-    st.sidebar.write(f"**Total dV:** {total_dv:.2f} km/s")
+    st.sidebar.subheader("Hyperbolic excess speed (Lambert)")
+    st.sidebar.write(f"**Departure v∞:** {vinf_dep:.2f} km/s  (C3 = {vinf_dep**2:.1f} km²/s²)")
+    st.sidebar.write(f"**Arrival v∞:** {vinf_arr:.2f} km/s")
+    st.sidebar.subheader(f"Burns from/into a {parking_alt} km circular orbit (patched conic)")
+    st.sidebar.write(f"**Departure Δv:** {dv_dep:.2f} km/s")
+    st.sidebar.write(f"**Capture Δv:** {dv_arr:.2f} km/s")
+    st.sidebar.write(f"**Total Δv:** {dv_dep + dv_arr:.2f} km/s")
 
 except Exception as e:
     st.error(f"An error occurred during calculation: {e}")
